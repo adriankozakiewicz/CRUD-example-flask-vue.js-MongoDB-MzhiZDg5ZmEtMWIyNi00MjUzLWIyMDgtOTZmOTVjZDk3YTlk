@@ -1,5 +1,5 @@
 Standart CRUD web application:
 
-backend - Flask (Python)
-frontend - Vue.js
-database - MongoDB
+ - backend - Flask (Python) 
+ - frontend - Vue.js
+ - database - MongoDB
