@@ -3,7 +3,8 @@ Simple CRUD web application (no security efforts were put, use for local pupuses
 
 To run application one need to: 
  - ensure current device can support powershell 
- - install and setup local mongoDB server (with no username or password to authenticate): 
+ - install and setup local mongoDB server
+ -  (with no username or password to authenticate): 
 https://www.mongodb.com/docs/manual/installation/#mongodb-installation-tutorials
  - download backend folder (from this repository)
  - install python3: https://www.python.org/downloads/
