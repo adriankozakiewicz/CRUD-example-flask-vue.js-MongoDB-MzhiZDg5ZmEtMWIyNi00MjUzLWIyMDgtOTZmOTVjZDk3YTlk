@@ -5,6 +5,7 @@ To run application one need to:
  - ensure current device can support powershell 
  - install and setup local mongoDB server (with no username or password to authenticate, host on default port - 27017): 
 https://www.mongodb.com/docs/manual/installation/#mongodb-installation-tutorials
+ - in mongoDB create database flask-example and collections: "notes", "users"
  - download backend folder (from this repository)
  - install python3: https://www.python.org/downloads/
  - run backend/example_venv/Scripts/Activate.ps1 with powershell
