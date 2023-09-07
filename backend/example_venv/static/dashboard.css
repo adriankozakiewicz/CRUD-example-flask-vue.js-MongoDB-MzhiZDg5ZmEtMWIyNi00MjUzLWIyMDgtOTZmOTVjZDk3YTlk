@@ -1,0 +1,22 @@
+
+
+
+
+.clear-text
+{
+    text-shadow: none;
+}
+
+
+.editor-textarea
+{
+    height: 250px;
+}
+
+@media(max-height: 450px)
+{
+    .editor-textarea
+    {
+        height: 100px;
+    }
+}

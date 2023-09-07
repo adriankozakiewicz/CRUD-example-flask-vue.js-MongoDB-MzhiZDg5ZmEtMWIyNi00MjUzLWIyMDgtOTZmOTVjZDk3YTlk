@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="static/favicon.png">
+
+    <title>Cover Template for Bootstrap</title>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
+
+    <!-- Using cover template: https://getbootstrap.com/docs/4.0/examples/cover/ -->
+    <link href="static/cover.css" rel="stylesheet">
+  </head>
+
+  <body class="text-center">
+
+    <div class="cover-container d-flex h-100 p-3 mx-auto flex-column">
+      <header class="masthead mb-auto">
+        <div class="inner">
+          <h3 class="masthead-brand">Notes </h3>
+          <nav class="nav nav-masthead justify-content-center">
+            <a class="nav-link active" href="/">Home</a>
+            <a class="nav-link" href="register">Register</a>
+            <a class="nav-link" href="login">Login</a>
+          </nav>
+        </div>
+      </header>
+
+      <main role="main" class="inner cover">
+        <section class="logging" v-if="!logged">            
+            <h1 class="cover-heading mb-4">Notes Login</h1>
+            <p class="lead"><input name="login" v-model="form.login" type="text" class="form-control mx-auto" style="width:18rem" placeholder="Login"></p>
+            <p class="lead"><input name="password" v-model="form.password" type="password" class="form-control mx-auto" style="width:18rem" placeholder="password"></p>
+            <p class="lead"><button type="button" class="btn btn-light" @click="login">Log in </button></p>
+        </section>
+
+        <section class="redirect" v-if="logged">            
+            <h3 class="cover-heading mb-4" v-if="logged_before">Already logged in</h3>
+            <h3 class="cover-heading mb-4" v-if="!logged_before">Successfully logged in</h3>
+            <p class="lead">Redirect to dashboard in {{ counter }}...</p>
+
+        </section>
+      </main>
+
+      <footer class="mastfoot mt-auto">
+        <div class="inner">
+          <p>CRUD-example-flask-vue.js-MongoDB-d41d8cd98f00b204e9800998ecf8427e&copy created By Adrian Kozakiewicz</p>
+          <p>Cover template for <a href="https://getbootstrap.com/">Bootstrap</a>, by <a href="https://twitter.com/mdo">@mdo</a>.</p>
+        </div>
+      </footer>
+    </div>
+
+
+    <script>
+
+
+  
+        const app = Vue.createApp({
+            data(){
+                return {
+                    logged: false,
+                    logged_before: false,
+                    counter: 1,
+                    counter_max: 5,
+
+                    form:
+                    {
+                      login:"",
+                      password:""
+                    }
+  
+                }
+            },
+            methods:
+            {
+              async checkIfLogged()
+                {
+                    logged = this.logged;
+
+                    if(await this.checkToken()) logged = true;
+
+                    if (logged)
+                    {
+                        this.logged = true;
+                        this.init_relocation();
+                        return true;
+                    }
+                    
+                },
+
+                init_relocation()
+                {
+                    target = this;
+                    setInterval(function(){target.counter--; if(target.counter<=0) document.location = "/dashboard"},1000)
+                },
+
+
+                login()
+                {
+
+                    dataPayload = {login: this.form.login, password: this.form.password}
+
+                    fetchUrl = "/api/login";
+
+                    fetchOptions = { 
+                        method: "POST",
+                        headers:
+                        {
+                            "Content-Type":"application/json"
+                        },
+                        body: JSON.stringify(dataPayload)
+                    }
+
+
+                    fetch(fetchUrl, fetchOptions)
+                        .then(response => (response_data = response.json()) )
+                        .then(response_data => 
+                            { 
+                                if(response_data.status == "logged")
+                                {
+                                    this.setCookies(response_data.data.token, true);
+                                    this.logged = true;
+                                    this.checkIfLogged();
+                                } 
+                                return null;
+                            }
+                    );
+
+                },
+
+                async checkToken()
+                {
+                  if(token = this.getTokenCookies())
+                  {
+                    dataPayload = {token: token}
+
+                    fetchUrl = "/api/checkToken";
+
+                    fetchOptions = { 
+                        method: "POST",
+                        headers:
+                        {
+                            "Content-Type":"application/json"
+                        },
+                        body: JSON.stringify(dataPayload)
+                    }
+
+                    response = await fetch(fetchUrl, fetchOptions);
+                    response_data = await response.json();
+                    if(response_data.status == "available")
+                    {
+                      return true;
+                    } 
+                    else
+                    {
+                      this.removeTokenCookie();
+                      return false;
+                    }
+                  }
+                },
+
+                setCookies(token)
+                {
+                    document.cookie = "token="+token+"; expires=Thu, 18 Dec 2023 12:00:00 UTC; path=/"; 
+                },
+
+                removeTokenCookie()
+                {
+                  document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/";
+                },
+
+
+                
+
+
+                getTokenCookies()
+                {
+                    cookies = document.cookie.split("; ");
+
+                    found = false;
+                    token = "";
+                    for(cookie of cookies)
+                    {
+                        nameValue = cookie.split("=")
+                        if(nameValue[0] == "token")
+                        {
+                            if(nameValue[1].length > 0) 
+                            {
+                              found = true;
+                              token = nameValue[1];
+                            }
+                        }
+                    }
+
+                    
+                    if (found) return token;
+
+                    return false;
+                }
+  
+  
+            },
+
+            
+
+            mounted()
+            {
+                this.checkIfLogged();
+            }
+        });
+        
+        app.mount('main');
+    
+    </script>
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    
+    <!-- Not using
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script>window.jQuery || document.write('<script src="../../../../assets/js/vendor/jquery-slim.min.js"><\/script>')</script>
+    <script src="../../../../assets/js/vendor/popper.min.js"></script>
+    <script src="../../../../dist/js/bootstrap.min.js"></script>
+    -->
+  </body>
+</html>

@@ -1,0 +1,3 @@
+db.notes.findOne({user:db.users.findOne({email:"joe@example.com"})._id})
+
+db.notes.findOneAndUpdate({user_id:db.users.findOne({email:"joe@example.com"})._id}, {$set: {"content":"$content","last_update":"$update"}})

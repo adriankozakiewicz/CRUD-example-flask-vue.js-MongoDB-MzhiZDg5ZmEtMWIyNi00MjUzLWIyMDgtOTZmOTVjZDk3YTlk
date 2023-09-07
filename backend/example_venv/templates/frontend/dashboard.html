@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="static/favicon.png">
+
+    <title>Dashboard</title>
+
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
+
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
+
+    <!-- Using cover template: https://getbootstrap.com/docs/4.0/examples/cover/ -->
+    <link href="static/cover.css" rel="stylesheet">
+    <link href="static/dashboard.css" rel="stylesheet">
+    <link href="static/icons.css" rel="stylesheet">
+  </head>
+
+  <body class="text-center">
+
+    <div class="cover-container d-flex h-100 p-3 mx-auto flex-column">
+      <header class="masthead">
+        <div class="inner">
+          <h3 class="masthead-brand">Notes Dashboard</h3>
+          <nav class="nav nav-masthead justify-content-center">
+            <a class="nav-link active" href="/">Home</a>
+            <a class="nav-link" href="register">Register</a>
+            <a class="nav-link" href="login">Login</a>
+          </nav>
+        </div>
+      </header>
+
+      <main role="main" class="inner cover">
+        
+        
+        <section class="select" v-if="!edition">
+          <h2 v-if="loaded">Your notes</h2>
+            <ul v-if="loaded && !error" class="list-group clear-text">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <span class="name d-block"> Title </span>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <span class="edit d-block mx-2 text-start" style="width: 12rem;">last update: </span>
+                    <span class="edit d-block text-start" style="width: 8rem;">Options: </span>
+                  </div>
+                </li>
+
+                <li v-for="note in notes" class="list-group-item d-flex justify-content-between align-items-center">
+                    <span class="name d-block">{{ note.title }} </span>
+                    <div class="d-flex justify-content-between align-items-center">
+                      <span class="edit d-block px-2 text-start" style="width: 12rem;">{{ note.last_update }} </span>
+                      <button @click="editNote(note.id)" class="btn btn-outline-primary mx-2">Edit</button>
+                      <button @click="deleteNote(note.id)" class="btn btn-outline-primary">Delete</button>
+                    </div>
+                </li>
+
+                <li class="list-group-item d-flex justify-content-end align-items-center">
+                  <button @click="addNote()" class="btn btn-outline-primary">+ Add Note</button>
+                </li>
+            </ul>
+            
+        </section>
+
+        <section class="editor" v-if="edition">
+          <h2 v-if="loaded">Note editor</h2>
+          <ul v-if="loaded && !error" class="list-group clear-text">
+            <li class="list-group-item text-start" v-if="selectedIsNewNote">Create new note</li>
+            <li class="list-group-item text-start" v-if="!selectedIsNewNote">Edit note</li>
+            <li class="list-group-item">
+              <div class="input-group">
+
+                <span class="input-group-text input-group-prepend">Title</span>
+                <input type="text" class="form-control" placeholder="Enter title" v-model="selectedNote.title">
+
+              </div>
+            </li>
+
+            <li class="list-group-item">
+              <textarea class="form-control editor-textarea" placeholder="Enter Note" v-model="selectedNote.content"></textarea>
+            </li>
+
+            <li class="list-group-item d-flex justify-content-end w-100">
+              <button class="btn btn-outline-primary" @click="saveNote()" v-if="!selectedIsNewNote">Save changes</button>
+              <button class="btn btn-outline-primary" @click="addNoteSave()" v-if="selectedIsNewNote">Save changes</button>
+            </li>
+          
+          </ul>
+        </section>
+        
+        <section class="loading" v-if="!loaded" >
+          <h2>Loading Notes</h2>
+          <div><img class="icon icon-loading-1" src="static/loading.png"></div>
+            <div v-if="error">Error: content could not be loaded, check your internet connection <br> <button onlick="refresh()">refresh</button>
+        </section>
+
+          
+      </main>
+
+
+
+
+
+
+
+
+      <footer class="mastfoot mt-auto">
+        <div class="inner">
+          <p>CRUD-example-flask-vue.js-MongoDB-d41d8cd98f00b204e9800998ecf8427e&copy created By Adrian Kozakiewicz</p>
+          <p>Cover template for <a href="https://getbootstrap.com/">Bootstrap</a>, by <a href="https://twitter.com/mdo">@mdo</a>.</p>
+        </div>
+      </footer>
+    </div>
+
+
+
+
+
+    <script>
+
+
+
+
+    
+
+        const app = Vue.createApp({
+            data(){
+                return {
+                    notes: null, // this.showNotes() > interval(func())
+                    selectedIsNewNote: false,
+                    selectedNote: null,
+                    //note:
+                    //{
+                    //    title: number,
+                    //    edit_datetime: datetime,
+                    //    color: color_id,
+                    //    id: unique
+                    //}
+
+                    loaded: false,
+                    error: false,
+                    edition: false,
+                    localTime: " a"
+
+                }
+            },
+            methods:
+            {
+                notesReset()
+                {
+
+                  target = this;
+                  token = this.getTokenCookies();
+                    this.checkToken()
+                        .then(rightToken => 
+                        {
+                          // get notes
+                          if(rightToken)
+                          {
+                            fetchUrl = "/api/notes";
+
+                            fetchOptions = { 
+                                method: "GET",
+                                headers: {
+                                  "Content-Type": "application/json"
+                                }
+                            }
+
+
+                            fetch(fetchUrl, fetchOptions)
+                                .then(response => (response_data = response.json()) )
+                                .then(response_data => 
+                                  {
+                                    if (response_data.status == "available")
+                                    {
+                                      target.notes = response_data.data.notes;
+                                      console.log(response_data.data.notes)
+                                      target.loaded = true;
+                                    }
+                                    else target.error = true;
+                                  }
+                                );
+                          }
+                          
+                        }
+                    );
+                    
+                },
+
+                async checkIfLogged()
+                {
+                    logged = this.logged;
+
+                    if(await this.checkToken()) logged = true;
+
+                    if (logged)
+                    {
+                        this.logged = true;
+                        return true;
+                    }
+                    else
+                    {
+                        this.init_relocation();
+                        return false;
+                    }
+                    
+                },
+
+                async checkToken()
+                {
+                  if(token = this.getTokenCookies())
+                  {
+                    dataPayload = {token: token}
+
+                    fetchUrl = "/api/checkToken";
+
+                    fetchOptions = { 
+                        method: "POST",
+                        headers:
+                        {
+                            "Content-Type":"application/json"
+                        },
+                        body: JSON.stringify(dataPayload)
+                    }
+
+                    response = await fetch(fetchUrl, fetchOptions);
+                    response_data = await response.json();
+                    if(response_data.status == "available")
+                    {
+                      return true;
+                    } 
+                    else
+                    {
+                      this.removeTokenCookie();
+                      return false;
+                    }
+                  } return false;
+                },
+
+                editNote(note_id)
+                {
+                  console.log(this.notes[0].id)
+                  
+                  fetchUrl = "/api/note/"+note_id
+
+                  fetchOptions = {
+                    method: "GET",
+                    headers: {
+                      "Content-Type": "application/json"
+                    }
+                  }
+
+                  target = this;
+
+
+                  fetch(fetchUrl, fetchOptions)
+                    .then(response => (response_data = response.json()) )
+                    .then(response_data => 
+                      {
+                        if (response_data.status == "available")
+                        {
+                          target.selectedNote = response_data.data.note;
+                          console.log(response_data.data.note)
+                          target.selectedIsNewNote = false;
+                          target.edition = true;
+                        }
+                        // TO DO:
+                        //else ERROR
+                      }
+                    );
+                },
+
+                deleteNote(note_id)
+                {
+                  console.log("delete: ", note_id)
+                  
+                  fetchUrl = "/api/note/"+note_id
+
+                  fetchOptions = {
+                    method: "DELETE",
+                    headers: {
+                      "Content-Type": "application/json"
+                    }                  
+                  }
+
+                  target = this;
+
+                  fetch(fetchUrl, fetchOptions)
+                    .then(response => 
+                      {
+                        if(response.status == 204)
+                        {
+                          target.notesReset();
+                        }
+                      }
+                    
+                    );
+                },
+
+                saveNote()
+                {
+                  console.log("update: ", this.selectedNote.id)
+                  
+                  fetchUrl = "/api/note/"+this.selectedNote.id
+
+
+                  requestBody = {
+                    'title': this.selectedNote.title,
+                    'content': this.selectedNote.content
+                  }
+
+                  fetchOptions = {
+                    method: "PUT",
+                    headers: {
+                      "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(requestBody)
+                  }
+
+                  target = this;
+
+                  fetch(fetchUrl, fetchOptions)
+                    .then(response => 
+                      {
+                        if(response.status == 204)
+                        {
+                          target.edition = false;
+                          target.notesReset();
+                        }
+                      }
+                    
+                    );
+                },
+
+                addNote(){
+                  this.selectedNote = {
+                    title: null,
+                    content: null
+                  }
+
+                  this.edition = true;
+                  this.selectedIsNewNote = true;
+
+
+                },
+
+                addNoteSave()
+                {
+                  console.log("create: ", this.selectedNote.id)
+                  
+                  fetchUrl = "/api/notes/"
+
+
+                  requestBody = {
+                    'title': this.selectedNote.title,
+                    'content': this.selectedNote.content
+                  }
+
+                  fetchOptions = {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(requestBody)
+                  }
+
+                  target = this;
+
+                  fetch(fetchUrl, fetchOptions)
+                    .then(response => 
+                      {
+                        if(response.status == 204)
+                        {
+                          target.edition = false;
+                          target.notesReset();
+                        }
+                      }
+                    
+                    );
+                },
+
+
+                getTokenCookies()
+                {
+                    cookies = document.cookie.split("; ");
+
+                    found = false;
+                    token = "";
+                    for(cookie of cookies)
+                    {
+                        nameValue = cookie.split("=")
+                        if(nameValue[0] == "token")
+                        {
+                            if(nameValue[1].length > 0) 
+                            {
+                              found = true;
+                              token = nameValue[1];
+                            }
+                        }
+                    }
+
+                    
+                    if (found) return token;
+
+                    return false;
+                },
+
+                removeTokenCookie()
+                {
+                  document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/";
+                },
+  
+                setUpAutoNotesReset(sec_delay)
+                {
+                  var target = this; setInterval(function(){ target.notesReset() }, sec_delay*1000);
+                },
+
+                init_relocation()
+                {
+                    target = this;
+                    setInterval(function(){target.counter--; if(target.counter<=0) document.location = "/"},1000)
+                }
+  
+            },
+
+
+
+                
+
+            mounted()
+            {
+              this.notesReset();
+              this.setUpAutoNotesReset(32);
+
+            }
+        });
+        
+        app.mount('main');
+    
+    </script>
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+  </body>
+</html>
